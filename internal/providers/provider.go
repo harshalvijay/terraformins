@@ -4,6 +4,8 @@
 package providers
 
 import (
+	"iter"
+
 	"github.com/zclconf/go-cty/cty"
 
 	"github.com/hashicorp/terraform/internal/configs/configschema"
@@ -105,7 +107,7 @@ type Interface interface {
 	CallFunction(CallFunctionRequest) CallFunctionResponse
 
 	// ListResource queries the remote for a specific resource type
-	ListResource(ListResourceRequest) error
+	ListResource(ListResourceRequest) ListResourceResponse
 
 	// Close shuts down the plugin process if applicable.
 	Close() error
@@ -749,3 +751,5 @@ type ListResourceRequest struct {
 	// Callback is called for each resource found
 	Callback ListResourceCallback
 }
+
+type ListResourceResponse iter.Seq2[ListResourceEvent, error]

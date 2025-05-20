@@ -249,15 +249,19 @@ func (o *offlineProvider) CallFunction(request providers.CallFunctionRequest) pr
 	return o.unconfiguredClient.CallFunction(request)
 }
 
-func (o *offlineProvider) ListResource(providers.ListResourceRequest) error {
-	var diags tfdiags.Diagnostics
-	diags = diags.Append(tfdiags.AttributeValue(
-		tfdiags.Error,
-		"Called ListResource on an unconfigured provider",
-		"Cannot list this resource because this provider is not configured. This is a bug in Terraform - please report it.",
-		nil, // nil attribute path means the overall configuration block
-	))
-	return diags.Err()
+func (o *offlineProvider) ListResource(providers.ListResourceRequest) providers.ListResourceResponse {
+	return func(yield func(providers.ListResourceEvent, error) bool) {
+		var diags tfdiags.Diagnostics
+		diags = diags.Append(tfdiags.AttributeValue(
+			tfdiags.Error,
+			"Called ListResource on an unconfigured provider",
+			"Cannot list this resource because this provider is not configured. This is a bug in Terraform - please report it.",
+			nil, // nil attribute path means the overall configuration block
+		))
+		if !yield(providers.ListResourceEvent{}, diags.Err()) {
+			return
+		}
+	}
 }
 
 func (o *offlineProvider) Close() error {
